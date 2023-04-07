@@ -1,0 +1,25 @@
+{
+    "extends": "flarum-tsconfig",
+    "include": [
+        "src/**/*",
+        "../vendor/flarum/core/js/dist-typings/@types/**/*"
+    ],
+    "files": [
+        "shims.d.ts"
+    ],
+    "compilerOptions": {
+        "declarationDir": "./dist-typings",
+        "baseUrl": ".",
+        "paths": {
+            "flamarkt/backoffice/*": [
+                "../vendor/flamarkt/backoffice/js/dist-typings/*"
+            ],
+            "flamarkt/identity/*": [
+                "../vendor/flamarkt/identity/js/dist-typings/*"
+            ],
+            "flarum/*": [
+                "../vendor/flarum/core/js/dist-typings/*"
+            ]
+        }
+    }
+}

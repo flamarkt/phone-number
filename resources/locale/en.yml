@@ -1,0 +1,14 @@
+flamarkt-phone-number:
+    backoffice:
+        settings:
+            searchable: Make phone number searchable
+            searchableHelp: >
+                Requires Scout extension.
+                This is potentially dangerous!
+                Any actor with access to list users permission will be able to filter the users they can see by a phone number even if they cannot see it!
+            required: Make phone number field required
+        permissions:
+            editOwn: Edit own phone number
+    lib:
+        field:
+            phoneNumber: Phone Number
