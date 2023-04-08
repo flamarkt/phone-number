@@ -21,12 +21,24 @@ app.initializers.add('flamarkt-phone-number', () => {
             type: 'switch',
             label: app.translator.trans('flamarkt-phone-number.backoffice.settings.required'),
         })
+        .registerSetting({
+            setting: 'flamarkt-phone-number.selectedPrefixes',
+            type: 'text',
+            label: app.translator.trans('flamarkt-phone-number.backoffice.settings.selectedPrefixes'),
+            help: app.translator.trans('flamarkt-phone-number.backoffice.settings.selectedPrefixesHelp'),
+        })
         .registerPermission({
             icon: 'fas fa-mobile-alt',
             label: app.translator.trans('flamarkt-phone-number.backoffice.permissions.editOwn'),
             permission: 'flamarkt-phone-number.editOwn',
             allowGuest: true,
-        }, 'moderate');
+        }, 'reply')
+        .registerPermission({
+            icon: 'fas fa-mobile-alt',
+            label: app.translator.trans('flamarkt-phone-number.backoffice.permissions.useAnyPrefix'),
+            permission: 'flamarkt-phone-number.useAnyPrefix',
+            allowGuest: true,
+        }, 'reply');
 
     addFieldToProductShowPage();
 });

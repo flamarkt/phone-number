@@ -7,8 +7,23 @@ flamarkt-phone-number:
                 This is potentially dangerous!
                 Any actor with access to list users permission will be able to filter the users they can see by a phone number even if they cannot see it!
             required: Make phone number field required
+            selectedPrefixes: Selected country prefixes
+            selectedPrefixesHelp: >
+                Comma-separated list of country codes, like <code>CH,FR,DE</code>.
+                If filled in, a dropdown will be added to the phone number input and the first item will be the default choice.
+                Adjust the prefix permissions below to control who can use country codes that are not in this list.
         permissions:
             editOwn: Edit own phone number
+            useAnyPrefix: Use any country prefix
     lib:
         field:
-            phoneNumber: Phone Number
+            label: Phone Number
+            custom: Custom
+    api:
+        error:
+            cannotEdit: You are not allowed to modify the phone number
+            invalidFormat: The phone number is not in a recognized format
+            invalidCountryCode: The phone number uses an unrecognized country code
+            invalidPattern: The phone number does not appear valid for the selected region
+            missingCountryCode: International prefix missing from phone number
+            countryCodeNotAllowed: Please provide a phone number from one of the listed regions. International prefix {prefix} not allowed

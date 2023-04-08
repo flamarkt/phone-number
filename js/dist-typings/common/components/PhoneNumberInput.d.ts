@@ -10,5 +10,7 @@ export interface PhoneNumberInputAttrs extends ComponentAttrs {
     user?: User;
 }
 export default class PhoneNumberInput extends Component<PhoneNumberInputAttrs> {
+    customMode: boolean;
+    oninit(vnode: any): void;
     view(): any;
 }

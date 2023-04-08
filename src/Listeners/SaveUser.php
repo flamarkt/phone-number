@@ -4,10 +4,12 @@ namespace Flamarkt\PhoneNumber\Listeners;
 
 use Flamarkt\PhoneNumber\Event\PhoneNumberUpdated;
 use Flarum\Foundation\ValidationException;
+use Flarum\Locale\Translator;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\Event\Saving;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Support\Arr;
+use libphonenumber\CountryCodeToRegionCodeMap;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -16,7 +18,8 @@ class SaveUser
 {
     public function __construct(
         protected SettingsRepositoryInterface $settings,
-        protected Factory                     $validation
+        protected Factory                     $validation,
+        protected Translator                  $translator
     )
     {
     }
@@ -32,7 +35,12 @@ class SaveUser
         }
 
         if (Arr::exists($attributes, 'flamarktPhoneNumber')) {
-            $event->actor->assertCan('editFlamarktPhoneNumber', $event->user);
+            if ($event->actor->cannot('editFlamarktPhoneNumber', $event->user)) {
+                // Throw validation error instead of PermissionDeniedException to allow for easier troubleshooting
+                throw new ValidationException([
+                    'flamarktPhoneNumber' => $this->translator->trans('flamarkt-phone-number.api.error.cannotEdit'),
+                ]);
+            }
 
             // TODO: use User validator so errors can be shown at the same time as others
             $this->validation->make($attributes, [
@@ -44,20 +52,47 @@ class SaveUser
             $rawPhoneNumber = (string)Arr::get($attributes, 'flamarktPhoneNumber');
             $newPhoneNumber = null;
 
-            if ($rawPhoneNumber) {
+            // If the number is way too short, we'll assume only the prefix got selected by the frontend UI
+            // And there's no actual number following
+            if (strlen($rawPhoneNumber) > 4) {
                 try {
                     $proto = $phoneUtil->parse($rawPhoneNumber);
 
                     if (!$phoneUtil->isValidNumber($proto)) {
                         throw new ValidationException([
-                            'flamarktPhoneNumber' => 'Invalid phone number',
+                            'flamarktPhoneNumber' => $this->translator->trans('flamarkt-phone-number.api.error.invalidPattern'),
                         ]);
+                    }
+
+                    // Should also be caught by the initial regex but just to be certain before doing tests on the value
+                    if (!$proto->hasCountryCode()) {
+                        throw new ValidationException([
+                            'flamarktPhoneNumber' => $this->translator->trans('flamarkt-phone-number.api.error.missingCountryCode'),
+                        ]);
+                    }
+
+                    if ($event->actor->cannot('flamarkt-phone-number.useAnyPrefix')) {
+                        $countryCodes = explode(',', $this->settings->get('flamarkt-phone-number.selectedPrefixes'));
+
+                        if (count(array_intersect($countryCodes, array_values(CountryCodeToRegionCodeMap::$countryCodeToRegionCodeMap[$proto->getCountryCode()]))) === 0) {
+                            throw new ValidationException([
+                                'flamarktPhoneNumber' => $this->translator->trans('flamarkt-phone-number.api.error.countryCodeNotAllowed', [
+                                    'prefix' => '+' . $proto->getCountryCode(),
+                                ]),
+                            ]);
+                        }
                     }
 
                     $newPhoneNumber = $phoneUtil->format($proto, PhoneNumberFormat::E164);
                 } catch (NumberParseException $exception) {
+                    if ($exception->getErrorType() == NumberParseException::INVALID_COUNTRY_CODE) {
+                        throw new ValidationException([
+                            'flamarktPhoneNumber' => $this->translator->trans('flamarkt-phone-number.api.error.invalidCountryCode'),
+                        ]);
+                    }
+
                     throw new ValidationException([
-                        'flamarktPhoneNumber' => 'Invalid phone number #' . $exception->getErrorType(),
+                        'flamarktPhoneNumber' => $this->translator->trans('flamarkt-phone-number.api.error.invalidFormat'),
                     ]);
                 }
             }

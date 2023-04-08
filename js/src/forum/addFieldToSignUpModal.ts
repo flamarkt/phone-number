@@ -16,7 +16,7 @@ export default function () {
         fields.add('flamarkt-phone-number', m('.Form-group', [
             m('label', {
                 for: 'flamarkt-signup-phone-number',
-            }, app.translator.trans('flamarkt-phone-number.lib.field.phoneNumber')),
+            }, app.translator.trans('flamarkt-phone-number.lib.field.label')),
             PhoneNumberInput.component({
                 id: 'flamarkt-signup-phone-number',
                 value: this.flamarktPhoneNumber,

@@ -16,7 +16,7 @@ export default function () {
         fields.add('categories', m('.Form-group', [
             m('label', {
                 for: 'user-edit-phone-number',
-            }, app.translator.trans('flamarkt-phone-number.lib.field.phoneNumber')),
+            }, app.translator.trans('flamarkt-phone-number.lib.field.label')),
             PhoneNumberInput.component({
                 id: 'user-edit-phone-number',
                 value: this.phoneNumber,
